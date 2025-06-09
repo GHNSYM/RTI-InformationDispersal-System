@@ -39,7 +39,7 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Allow frontend URL or default to Vite's default port
+  origin: process.env.FRONTEND_URL, // Allow frontend URL or default to Vite's default port
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Allow credentials
