@@ -1,9 +1,9 @@
 import axios from 'axios';
 
+const BASE_URL = import.meta.env.API_URL;
+
 const axiosInstance = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' 
-    ? 'https://rti-informationdispersal-system.onrender.com'
-    : process.env.FRONTEND_URL || 'http://localhost:5000',
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -13,6 +13,9 @@ const axiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Log the full URL being requested
+    console.log('Making request to:', `${config.baseURL}${config.url}`);
+    
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');    // Add authorization header if token exists
     if (token) {

@@ -39,17 +39,20 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://rti-information-dispersal-system.vercel.app', 'http://localhost:5173']
-    : process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Allow credentials
+  credentials: true
 }));
 
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Add a test route to verify API is working
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working' });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);

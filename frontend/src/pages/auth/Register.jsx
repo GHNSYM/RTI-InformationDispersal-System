@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import Layout from "./Layout";
-import axios from "axios";
+import axiosInstance from "../../middleware/axiosInstance";
 
 const Register = () => {
   const {
@@ -88,20 +88,13 @@ const onSubmit = async (data) => {
   delete formattedData.pincode;
 
   try {
-    const response = await fetch(`${process.env.FRONTEND_URL}/api/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formattedData),
-    });
-
-    const result = await response.json();
-    if (response.ok) {
+    const response = await axiosInstance.post("/api/auth/register", formattedData);
+    if (response.data) {
       navigate("/login");
-    } else {
-      setError(result.error || "Registration failed");
     }
   } catch (err) {
-    setError(err.message || "Something went wrong");
+    console.error('Registration error:', err);
+    setError(err.response?.data?.error || err.message || "Something went wrong");
   }
 };
 
