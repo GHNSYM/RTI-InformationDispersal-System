@@ -51,7 +51,7 @@ const DashboardLayout = ({ children }) => {
           onClose={setSidebarOpen}
         >
           <Transition.Child
-            as={Fragment}
+            as="div"
             enter="transition-opacity ease-linear duration-300"
             enterFrom="opacity-0"
             enterTo="opacity-100"
@@ -64,7 +64,7 @@ const DashboardLayout = ({ children }) => {
 
           <div className="fixed inset-0 flex">
             <Transition.Child
-              as={Fragment}
+              as="div"
               enter="transition ease-in-out duration-300 transform"
               enterFrom="-translate-x-full"
               enterTo="translate-x-0"
@@ -75,11 +75,7 @@ const DashboardLayout = ({ children }) => {
               <Dialog.Panel className="relative mr-16 flex w-full max-w-xs flex-1">
                 <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
                   <div className="flex h-16 shrink-0 items-center">
-                    <img
-                      className="h-8 w-auto"
-                      src="/src/assets/title.png"
-                      alt="RTI System"
-                    />
+                    <h1 className="text-3xl font-bold text-black">RTI Portal</h1>
                   </div>
                   <nav className="flex flex-1 flex-col">
                     <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -123,13 +119,9 @@ const DashboardLayout = ({ children }) => {
 
       {/* Static sidebar for desktop */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-56 lg:flex-col">
-        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center">
-            <img
-              className="h-8 w-auto"
-              src="/src/assets/title.png"
-              alt="RTI System"
-            />
+            <h1 className="text-3xl font-bold text-black">RTI Portal</h1>
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">

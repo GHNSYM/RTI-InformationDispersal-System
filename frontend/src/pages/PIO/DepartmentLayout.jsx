@@ -48,14 +48,14 @@ const DepartmentLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Transition.Root show={sidebarOpen} as={Fragment}>
+      <Transition.Root show={sidebarOpen} as="div">
         <Dialog
           as="div"
           className="relative z-50 lg:hidden"
           onClose={setSidebarOpen}
         >
           <Transition.Child
-            as={Fragment}
+            as="div"
             enter="transition-opacity ease-linear duration-300"
             enterFrom="opacity-0"
             enterTo="opacity-100"
@@ -68,7 +68,7 @@ const DepartmentLayout = ({ children }) => {
 
           <div className="fixed inset-0 flex">
             <Transition.Child
-              as={Fragment}
+              as="div"
               enter="transition ease-in-out duration-300 transform"
               enterFrom="-translate-x-full"
               enterTo="translate-x-0"
@@ -184,7 +184,7 @@ const DepartmentLayout = ({ children }) => {
                   <BellIcon className="h-6 w-6" aria-hidden="true" />
                 </Menu.Button>
                 <Transition
-                  as={Fragment}
+                  as="div"
                   enter="transition ease-out duration-100"
                   enterFrom="transform opacity-0 scale-95"
                   enterTo="transform opacity-100 scale-100"
@@ -216,7 +216,7 @@ const DepartmentLayout = ({ children }) => {
                   </div>
                 </Menu.Button>
                 <Transition
-                  as={Fragment}
+                  as="div"
                   enter="transition ease-out duration-100"
                   enterFrom="transform opacity-0 scale-95"
                   enterTo="transform opacity-100 scale-100"

@@ -230,7 +230,7 @@ const SpioAssistantDashboard = () => {
                 <BellIcon className="h-6 w-6" aria-hidden="true" />
               </Menu.Button>
               <Transition
-                as={Fragment}
+                as="div"
                 enter="transition ease-out duration-100"
                 enterFrom="transform opacity-0 scale-95"
                 enterTo="transform opacity-100 scale-100"
@@ -258,7 +258,7 @@ const SpioAssistantDashboard = () => {
                 </div>
               </Menu.Button>
               <Transition
-                as={Fragment}
+                as="div"
                 enter="transition ease-out duration-100"
                 enterFrom="transform opacity-0 scale-95"
                 enterTo="transform opacity-100 scale-100"
@@ -407,7 +407,7 @@ const SpioAssistantDashboard = () => {
       </div>
 
       {/* View Request Modal */}
-      <Transition.Root show={showViewModal} as={Fragment}>
+      <Transition.Root show={showViewModal} as="div">
         <Dialog as="div" className="relative z-50" onClose={() => {
           setShowViewModal(false);
           setSelectedRequest(null);
@@ -493,7 +493,7 @@ const SpioAssistantDashboard = () => {
       </Transition.Root>
 
       {/* Add Remarks Modal */}
-      <Transition.Root show={showRemarkModal} as={Fragment}>
+      <Transition.Root show={showRemarkModal} as="div">
         <Dialog as="div" className="relative z-50" onClose={() => {
           setShowRemarkModal(false);
           setRemarkText('');

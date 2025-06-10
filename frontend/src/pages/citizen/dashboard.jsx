@@ -82,7 +82,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
-          as={Fragment}
+          as="div"
           enter="ease-out duration-300"
           enterFrom="opacity-0"
           enterTo="opacity-100"
@@ -96,14 +96,15 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <Transition.Child
-              as={Fragment}
+              as="div"
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
               leave="ease-in duration-200"
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
-            >              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
+            >
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all">
                 <div className="flex justify-between items-center mb-4">
                   <Dialog.Title className="text-lg font-medium text-gray-900">
                     Request Details
@@ -536,7 +537,8 @@ const CitizenDashboard = () => {
 
         {/* Statistics Cards */}
         {!showNewRequest && (
-          <>            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:grid-cols-4">
               <StatCard
                 title="Processing"
                 value={stats.processingRequests}
@@ -560,20 +562,20 @@ const CitizenDashboard = () => {
             </div>
 
             {/* Recent Requests Table */}
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+            <div className="bg-white shadow rounded-lg mt-4 sm:mt-6">
+              <div className="px-3 py-4 sm:px-4 sm:py-5">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
                   Recent Requests
                 </h3>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto -mx-3 sm:mx-0">
                   <table className="min-w-full divide-y divide-gray-300">
                     <thead>
                       <tr>
-                        {["Request ID", "Subject", "Status", "Date", "Attachment", "Actions"].map(
+                        {["ID", "Subject", "Status", "Date", "Actions"].map(
                           (h) => (
                             <th
                               key={h}
-                              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                              className="px-2 sm:px-3 py-2 sm:py-3.5 text-left text-xs sm:text-sm font-semibold text-gray-900"
                             >
                               {h}
                             </th>
@@ -585,34 +587,25 @@ const CitizenDashboard = () => {
                       {recentRequests.length > 0 ? (
                         recentRequests.map((r) => (
                           <tr key={r.id}>
-                            <td className="px-3 py-4 text-sm text-gray-900">
+                            <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
                               {r.id}
                             </td>
-                            <td className="px-3 py-4 text-sm text-gray-500">
+                            <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm text-gray-500">
                               {r.subject}
                             </td>
-                            <td className="px-3 py-4 text-sm">                              <span
-                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusColor(
+                            <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm">
+                              <span
+                                className={`inline-flex items-center rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs font-semibold ${getStatusColor(
                                   r.status
                                 )}`}
                               >
                                 {r.status}
                               </span>
                             </td>
-                            <td className="px-3 py-4 text-sm text-gray-500">
+                            <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm text-gray-500 whitespace-nowrap">
                               {r.date}
                             </td>
-                            <td className="px-3 py-4 text-sm text-gray-500">
-                              {r.file_name ? (
-                                <span className="text-sm text-gray-500">
-                                  {r.file_name}
-                                </span>
-                              ) : (
-                                <span className="text-sm text-gray-400 italic">
-                                  No attachment
-                                </span>
-                              )}
-                            </td>                            <td className="px-3 py-4 text-sm text-gray-500">
+                            <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm">
                               <button
                                 onClick={() => {
                                   setSelectedRequest(r.id);
@@ -620,7 +613,7 @@ const CitizenDashboard = () => {
                                 }}
                                 className="inline-flex items-center text-indigo-600 hover:text-indigo-900"
                               >
-                                <EyeIcon className="h-5 w-5 inline-block mr-1" />
+                                <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5 inline-block mr-1" />
                                 View
                               </button>
                             </td>
@@ -629,8 +622,8 @@ const CitizenDashboard = () => {
                       ) : (
                         <tr>
                           <td
-                            colSpan={6}
-                            className="px-3 py-4 text-center text-sm text-gray-500 italic"
+                            colSpan={5}
+                            className="px-2 sm:px-3 py-2 sm:py-4 text-center text-xs sm:text-sm text-gray-500 italic"
                           >
                             No Requests yet.
                           </td>
@@ -676,16 +669,16 @@ function StatCard({ title, value, icon: Icon }) {
   const iconColor = getIconColor(title);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-100 shadow-lg border border-gray-100 transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
-      <div className="absolute top-0 right-0 mt-4 mr-4 opacity-75">
-        <Icon className={`h-8 w-8 ${iconColor}`} />
+    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-100 shadow-sm border border-gray-100 transition-all duration-300">
+      <div className="absolute top-0 right-0 mt-2 mr-2 sm:mt-4 sm:mr-4 opacity-75">
+        <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${iconColor}`} />
       </div>
-      <div className="relative z-10 p-6">
-        <h3 className="text-lg font-medium text-gray-600">{title}</h3>
-        <p className="text-4xl font-bold text-gray-900 mt-2">{value}</p>
+      <div className="relative z-10 p-3 sm:p-6">
+        <h3 className="text-sm sm:text-lg font-medium text-gray-600">{title}</h3>
+        <p className="text-2xl sm:text-4xl font-bold text-gray-900 mt-1 sm:mt-2">{value}</p>
       </div>
-      <div className="absolute bottom-0 right-0 opacity-5 transform translate-x-4 translate-y-4">
-        <Icon className={`h-24 w-24 ${iconColor}`} />
+      <div className="absolute bottom-0 right-0 opacity-5 transform translate-x-2 translate-y-2 sm:translate-x-4 sm:translate-y-4">
+        <Icon className={`h-16 w-16 sm:h-24 sm:w-24 ${iconColor}`} />
       </div>
     </div>
   );
