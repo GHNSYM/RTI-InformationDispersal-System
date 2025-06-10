@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const db = require('../config/database');
-const { RtiRequest, Department, RtiLog } = db;
+const { RtiRequest, Department, RtiLog, User } = db;
 const auth = require('../middleware/auth');
 const { Op } = require('sequelize');
 const RequestLogger = require('../utils/requestLogger');
@@ -250,8 +250,42 @@ router.get('/request/:id', auth, async (req, res, next) => {
 
     res.json(response);
   } catch (err) {
-    console.error('Error fetching request details:', err);
     next(err);
+  }
+});
+
+// Get request logs
+router.get('/request/:id/logs', auth, async (req, res, next) => {
+  try {
+    const citizenId = req.user.id;
+    
+    // First verify the request belongs to this citizen
+    const request = await RtiRequest.findOne({
+      where: { 
+        id: req.params.id,
+        citizen_id: citizenId
+      }
+    });
+
+    if (!request) {
+      return res.status(404).json({ error: 'Request not found' });
+    }
+
+    // Get all logs for this request
+    const logs = await RtiLog.findAll({
+      where: { request_id: req.params.id },
+      include: [{
+        model: User,
+        as: 'actor',
+        attributes: ['name', 'email', 'phone']
+      }],
+      order: [['created_at', 'ASC']]
+    });
+
+    res.json(logs);
+  } catch (err) {
+    console.error('Error fetching request logs:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 

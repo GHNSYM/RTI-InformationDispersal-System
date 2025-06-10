@@ -6,7 +6,7 @@ const db = require('../config/database');
 const { sequelize, RtiRequest, Department, User, District } = db;
 const auth = require('../middleware/auth');
 const { Op } = require('sequelize');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Get detailed information for a single request - accessible by all authenticated users
 router.get('/request/:id', auth, async (req, res, next) => {  try {
@@ -329,7 +329,7 @@ router.post('/departments', auth, async (req, res) => {
       district_id
     }, { transaction: t });
 
-    // Create PIO user
+    // Create PIO user - password will be hashed by the User model hooks
     await User.create({
       name: pio_name,
       email: pio_email,

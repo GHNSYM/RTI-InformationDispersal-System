@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-// import Layout from '../components/common/Layout';
 import demoImage from '/src/assets/demo.png';
 import Layout from './auth/Layout';
 
