@@ -139,10 +139,8 @@ router.post("/login", async (req, res) => {
       failedAttempts.delete(email);
     }
 
-    // Generate token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "5h",
-    });
+    // Generate token without expiration
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
 
     res.json({
       token,
@@ -177,10 +175,8 @@ router.post("/logout", auth, async (req, res) => {
 // Refresh token route
 router.post("/refresh_token", auth, async (req, res) => {
   try {
-    // Generate new token
-    const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    // Generate new token without expiration
+    const token = jwt.sign({ id: req.user.id }, process.env.JWT_SECRET);
 
     res.json({ token });
   } catch (error) {

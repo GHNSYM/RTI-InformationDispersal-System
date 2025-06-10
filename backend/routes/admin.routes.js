@@ -326,7 +326,7 @@ router.post('/departments', auth, async (req, res) => {
     const department = await Department.create({
       code,
       name_en,
-      district_id
+      district_code: district.district_code,
     }, { transaction: t });
 
     // Create PIO user - password will be hashed by the User model hooks
