@@ -5,6 +5,7 @@ const db = require('../config/database');
 const { User, RtiRequest, Department, RtiLog } = db;
 const auth = require('../middleware/auth');
 const { Op } = require('sequelize');
+const RequestLogger = require('../utils/requestLogger');
 
 // Get assigned requests for assistant
 router.get('/assigned-requests', auth, async (req, res, next) => {
