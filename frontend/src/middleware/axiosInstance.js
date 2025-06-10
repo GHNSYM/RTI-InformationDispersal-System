@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.FRONTEND_URL,
+  baseURL: process.env.NODE_ENV === 'production' 
+    ? 'https://rti-informationdispersal-system.onrender.com'
+    : process.env.FRONTEND_URL || 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },

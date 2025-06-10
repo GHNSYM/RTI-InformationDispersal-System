@@ -39,7 +39,9 @@ app.use(limiter);
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL, // Allow frontend URL or default to Vite's default port
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://rti-information-dispersal-system.vercel.app', 'http://localhost:5173']
+    : process.env.FRONTEND_URL || 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Allow credentials
