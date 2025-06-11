@@ -15,6 +15,8 @@ const db = require('./config/database');
 
 const app = express();
 
+// Trust proxy - required when running behind a reverse proxy
+app.set('trust proxy', 1);
 
 db.sequelize.authenticate()
   .then(() => {
