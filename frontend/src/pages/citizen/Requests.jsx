@@ -2,7 +2,8 @@ import { useState, useEffect, Fragment } from "react";
 import DashboardLayout from "./DashboardLayout";
 import axiosInstance from "../../middleware/axiosInstance";
 import { Dialog, Transition } from "@headlessui/react";
-import { EyeIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, ArrowDownTrayIcon, ClockIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import { toast } from "react-hot-toast";
 
 const getStatusColor = (status) => {
   switch (status.toLowerCase()) {
@@ -23,26 +24,29 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [logs, setLogs] = useState([]);
+  const [showLogs, setShowLogs] = useState(false);
 
   useEffect(() => {
-  const fetchRequestDetails = async () => {
+    const fetchRequestDetails = async () => {
       if (isOpen && requestId) {
         try {
           setLoading(true);
           setError(null);
-          const response = await axiosInstance.get(
-            `/api/user/request/${requestId}`
-          );
-          if (response.data) {
-            setRequest(response.data);
+          const [requestRes, logsRes] = await Promise.all([
+            axiosInstance.get(`/api/user/request/${requestId}`),
+            axiosInstance.get(`/api/user/request/${requestId}/logs`)
+          ]);
+          if (requestRes.data) {
+            console.log('Requests Page Request Data:', requestRes.data);
+            setRequest(requestRes.data);
+            setLogs(logsRes.data);
           } else {
             setError("No data received from server");
           }
         } catch (err) {
           console.error("Request details error:", err.response || err);
-          setError(
-            err.response?.data?.error || "Failed to fetch request details"
-          );
+          setError(err.response?.data?.error || "Failed to fetch request details");
         } finally {
           setLoading(false);
         }
@@ -52,24 +56,41 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
     fetchRequestDetails();
   }, [isOpen, requestId]);
 
-  const downloadAttachment = async () => {
+  const handleDownload = async () => {
     try {
-      const response = await axiosInstance.get(
-        `/api/user/request/${requestId}/response-file`,
-        {
-          responseType: "blob",
-        }
-      );
-
+      const response = await axiosInstance.get(`/api/user/request/${requestId}/attachment`, {
+        responseType: 'blob'
+      });
+      
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
+      const link = document.createElement('a');
       link.href = url;
-      link.setAttribute("download", request.response_file_name);
+      link.setAttribute('download', request.file_name);
       document.body.appendChild(link);
       link.click();
-      link.parentNode.removeChild(link);
-    } catch (err) {
-      console.error("Download failed:", err);
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading attachment:', error);
+      toast.error('Failed to download attachment');
+    }
+  };
+
+  const handleDownloadResponse = async () => {
+    try {
+      const response = await axiosInstance.get(`/api/user/request/${requestId}/response`, {
+        responseType: 'blob'
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', request.response_file_name);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading response:', error);
+      toast.error('Failed to download response');
     }
   };
 
@@ -77,7 +98,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
-          as="div"
+          as={Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
           enterTo="opacity-100"
@@ -89,9 +110,9 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-3 sm:p-4">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
-              as="div"
+              as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
@@ -99,107 +120,146 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-xl sm:rounded-2xl bg-white p-4 sm:p-6 shadow-xl transition-all">
-                <div className="flex justify-between items-center mb-3 sm:mb-4">
-                  <Dialog.Title className="text-base sm:text-lg font-medium text-gray-900">
-                    Request Details
-                  </Dialog.Title>
-                  <button
-                    onClick={onClose}
-                    className="text-gray-400 hover:text-gray-500"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+              <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Title
+                  as="h3"
+                  className="text-lg font-medium leading-6 text-gray-900"
+                >
+                  Request Details
+                </Dialog.Title>
 
                 {loading ? (
-                  <div className="flex justify-center py-6 sm:py-8">
-                    <svg className="animate-spin h-6 w-6 sm:h-8 sm:w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                  <div className="mt-4 flex justify-center">
+                    <ClockIcon className="h-8 w-8 animate-spin text-gray-400" />
                   </div>
                 ) : error ? (
-                  <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-red-50 text-red-600 rounded-md text-sm">
-                    {error}
-                  </div>
-                ) : request ? (
-                  <div className="mt-3 sm:mt-4 space-y-4 sm:space-y-6">
-                    {/* Status Section */}
-                    <div className="flex justify-between items-center">
-                      <p className="text-xs sm:text-sm font-medium text-gray-500">Status</p>
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs font-semibold ${getStatusColor(
-                          request.status
-                        )}`}
+                  <div className="mt-4 text-red-600">{error}</div>
+                ) : request && (
+                  <div className="mt-4 space-y-4">
+                    {/* Basic Info */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <p className="text-sm font-medium text-gray-500">Status</p>
+                        <span
+                          className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${getStatusColor(
+                            request.status
+                          )}`}
+                        >
+                          {request.status}
+                        </span>
+                      </div>
+                      {request.status === 'Rejected' && request.rejection_reason && (
+                        <div className="mt-2 p-3 bg-red-50 rounded-md">
+                          <p className="text-sm font-medium text-red-700">Rejection Reason:</p>
+                          <p className="text-sm text-red-600 mt-1">{request.rejection_reason}</p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">ID</p>
+                        <p className="text-sm text-gray-900">{request.id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Subject</p>
+                        <p className="text-sm text-gray-900">{request.subject}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Description</p>
+                        <p className="text-sm text-gray-900">{request.description}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Department</p>
+                        <p className="text-sm text-gray-900">{typeof request.department === 'object' 
+                          ? request.department.name_en 
+                          : request.department}</p>
+                      </div>
+                      {request.file_name && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Attachment</p>
+                          <button
+                            onClick={handleDownload}
+                            className="mt-1 inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4 mr-1.5" />
+                            Download {request.file_name}
+                          </button>
+                        </div>
+                      )}
+                      {request.response_file_name && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Response Document</p>
+                          <button
+                            onClick={handleDownloadResponse}
+                            className="mt-1 inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4 mr-1.5" />
+                            Download Response
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Request Logs */}
+                    <div className="mt-6">
+                      <button
+                        onClick={() => setShowLogs(!showLogs)}
+                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                       >
-                        {request.status}
-                      </span>
-                    </div>
-
-                    {/* Rejection Reason (if applicable) */}
-                    {request.status === 'Rejected' && request.rejection_reason && (
-                      <div className="p-3 sm:p-4 bg-red-50 rounded-lg">
-                        <p className="text-xs sm:text-sm font-medium text-red-800">Rejection Reason:</p>
-                        <p className="mt-1 text-xs sm:text-sm text-red-600">{request.rejection_reason}</p>
-                      </div>
-                    )}
-
-                    {/* Basic Info Section */}
-                    <div className="grid grid-cols-1 gap-3 sm:gap-4">
-                      <div>
-                        <p className="text-xs sm:text-sm font-medium text-gray-500">Request ID</p>
-                        <p className="mt-1 text-xs sm:text-sm text-gray-900">{request.id}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs sm:text-sm font-medium text-gray-500">Subject</p>
-                        <p className="mt-1 text-xs sm:text-sm text-gray-900">{request.subject}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs sm:text-sm font-medium text-gray-500">Description</p>
-                        <p className="mt-1 text-xs sm:text-sm text-gray-900">{request.description}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs sm:text-sm font-medium text-gray-500">Department</p>
-                        <p className="mt-1 text-xs sm:text-sm text-gray-900">{request.department?.name_en || request.department}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs sm:text-sm font-medium text-gray-500">Submission Date</p>
-                        <p className="mt-1 text-xs sm:text-sm text-gray-900">{request.date}</p>
-                      </div>
-                    </div>
-
-                    {/* File Attachments Section */}
-                    {(request.file_name || (request.status === 'Approved' && request.response_file_name)) && (
-                      <div className="space-y-2 sm:space-y-3">
-                        <h4 className="text-xs sm:text-sm font-medium text-gray-900">Attachments</h4>
-                        {request.file_name && (
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs sm:text-sm text-gray-500">{request.file_name}</span>
+                        {showLogs ? 'Hide Activity Log' : 'Show Activity Log'}
+                      </button>
+                      
+                      {showLogs && (
+                        <div className="mt-4 space-y-4">
+                          <h4 className="text-sm font-medium text-gray-900">Activity Log</h4>
+                          <div className="flow-root">
+                            <ul role="list" className="-mb-8">
+                              {logs.map((log, logIdx) => (
+                                <li key={log.id}>
+                                  <div className="relative pb-8">
+                                    {logIdx !== logs.length - 1 ? (
+                                      <span
+                                        className="absolute left-4 top-4 -ml-px h-full w-0.5 bg-gray-200"
+                                        aria-hidden="true"
+                                      />
+                                    ) : null}
+                                    <div className="relative flex space-x-3">
+                                      <div>
+                                        <span className="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white">
+                                          <DocumentTextIcon className="h-5 w-5 text-white" aria-hidden="true" />
+                                        </span>
+                                      </div>
+                                      <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                                        <div>
+                                          <p className="text-sm text-gray-500">
+                                            {log.remarks || log.action_type}
+                                            {' '}
+                                            <span className="font-medium text-gray-900">
+                                              {log.actor?.name}
+                                            </span>
+                                          </p>
+                                        </div>
+                                        <div className="whitespace-nowrap text-right text-sm text-gray-500">
+                                          <time dateTime={log.created_at}>
+                                            {new Date(log.created_at).toLocaleString()}
+                                          </time>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                        )}
-                        {request.status === 'Approved' && request.response_file_name && (
-                          <div>
-                            <button
-                              onClick={downloadAttachment}
-                              className="inline-flex items-center px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 shadow-sm text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                              <ArrowDownTrayIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                              Download Response
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ) : null}
+                )}
 
-                <div className="mt-4 sm:mt-6 flex justify-end">
+                <div className="mt-6">
                   <button
+                    type="button"
+                    className="inline-flex justify-center rounded-md border border-transparent bg-primary-100 px-4 py-2 text-sm font-medium text-primary-900 hover:bg-primary-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
                     onClick={onClose}
-                    className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-md bg-gray-100 text-gray-800 hover:bg-gray-200 text-xs sm:text-sm"
                   >
                     Close
                   </button>
@@ -250,78 +310,56 @@ const CitizenRequests = () => {
 
   return (
     <DashboardLayout>
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-3 py-4 sm:px-4 sm:py-5">
-          <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">
-            All Requests
-          </h3>
+      <div className="p-2 sm:p-4 lg:p-6">
+        {/* Header Section */}
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">All Requests</h1>
+          <p className="mt-1 text-sm text-gray-500">View and manage all your RTI requests</p>
+        </div>
+
+        {/* Main Content */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
           {loading ? (
-            <div className="flex justify-center py-8">
-              <svg className="animate-spin h-6 w-6 sm:h-8 sm:w-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+            <div className="flex justify-center items-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : requests.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No requests found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto -mx-3 sm:mx-0">
-              <table className="min-w-full divide-y divide-gray-300">
-                <thead>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-white/50">
                   <tr>
-                    {["ID", "Subject", "Status", "Date", "Actions"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="px-2 sm:px-3 py-2 sm:py-3.5 text-left text-xs sm:text-sm font-semibold text-gray-900"
-                        >
-                          {h}
-                        </th>
-                      )
-                    )}
+                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {requests.length > 0 ? (
-                    requests.map((r) => (
-                      <tr key={r.id}>
-                        <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
-                          {r.id}
-                        </td>
-                        <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm text-gray-500">
-                          {r.subject}
-                        </td>
-                        <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm">
-                          <span
-                            className={`inline-flex items-center rounded-full px-2 py-0.5 sm:px-2.5 sm:py-1 text-xs font-semibold ${getStatusColor(
-                              r.status
-                            )}`}
-                          >
-                            {r.status}
-                          </span>
-                        </td>
-                        <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm text-gray-500 whitespace-nowrap">
-                          {r.date}
-                        </td>
-                        <td className="px-2 sm:px-3 py-2 sm:py-4 text-xs sm:text-sm">
-                          <button
-                            onClick={() => openModal(r.id)}
-                            className="inline-flex items-center text-indigo-600 hover:text-indigo-900"
-                          >
-                            <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5 inline-block mr-1" />
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-2 sm:px-3 py-2 sm:py-4 text-center text-xs sm:text-sm text-gray-500 italic"
-                      >
-                        No Requests yet.
+                <tbody className="bg-white/50 divide-y divide-gray-200">
+                  {requests.map((request) => (
+                    <tr key={request.id} className="hover:bg-gray-50/50 transition-colors duration-200">
+                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">{request.id}</td>
+                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.subject}</td>
+                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(request.status)}`}>
+                          {request.status}
+                        </span>
+                      </td>
+                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.date}</td>
+                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                        <button
+                          onClick={() => openModal(request.id)}
+                          className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                        >
+                          <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                        </button>
                       </td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -329,7 +367,6 @@ const CitizenRequests = () => {
         </div>
       </div>
 
-      {/* View Request Modal */}
       <ViewRequestModal
         isOpen={isModalOpen}
         onClose={closeModal}

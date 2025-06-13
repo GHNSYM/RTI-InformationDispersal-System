@@ -76,17 +76,19 @@ const Departments = () => {
         // Format the department name to include the district
         const formattedName = `${formData.name_en}, ${district.district_name}`;
 
-        console.log('Creating department with:', {
-          district_id: district.district_id,
-          user_role: user.role,
-          user_district_code: user.district_code
-        });
+        const departmentData = {
+          district_id: parseInt(district.district_id),
+          name_en: formattedName,
+          pio_name: formData.pio_name,
+          pio_email: formData.pio_email,
+          pio_phone: formData.pio_phone,
+          pio_password: formData.pio_password,
+          pio_address: formData.pio_address
+        };
 
-        await axiosInstance.post("/api/admin/departments", {
-          ...formData,
-          name_en: formattedName, // Use the formatted name
-          district_id: parseInt(district.district_id)
-        });
+        console.log('Sending department data:', departmentData);
+        const response = await axiosInstance.post("/api/admin/departments", departmentData);
+        console.log('Department creation response:', response.data);
       }
       setIsModalOpen(false);
       setEditingDepartment(null);
@@ -101,6 +103,7 @@ const Departments = () => {
       fetchDepartments();
     } catch (err) {
       console.error('Error submitting department:', err);
+      console.error('Error details:', err.response?.data);
       setError(err.response?.data?.error || "Operation failed");
     }
   };

@@ -15,6 +15,7 @@ import axiosInstance from "../../middleware/axiosInstance";
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { toast } from "react-hot-toast";
+import { useAuth } from "../../contexts/AuthContext";
 
 // Move getStatusColor function outside of components
 const getStatusColor = (status) => {
@@ -38,7 +39,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
   const [showLogs, setShowLogs] = useState(false);
 
   useEffect(() => {
-  const fetchRequestDetails = async () => {
+    const fetchRequestDetails = async () => {
       if (isOpen && requestId) {
         try {
           setLoading(true);
@@ -48,6 +49,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
             axiosInstance.get(`/api/user/request/${requestId}/logs`)
           ]);
           if (requestRes.data) {
+            console.log('Dashboard Request Data:', requestRes.data);
             setRequest(requestRes.data);
             setLogs(logsRes.data);
           } else {
@@ -107,7 +109,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
         <Transition.Child
-          as={div}
+          as={Fragment}
           enter="ease-out duration-300"
           enterFrom="opacity-0"
           enterTo="opacity-100"
@@ -121,7 +123,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
-              as={div}
+              as={Fragment}
               enter="ease-out duration-300"
               enterFrom="opacity-0 scale-95"
               enterTo="opacity-100 scale-100"
@@ -134,8 +136,8 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
                   as="h3"
                   className="text-lg font-medium leading-6 text-gray-900"
                 >
-                    Request Details
-                  </Dialog.Title>
+                  Request Details
+                </Dialog.Title>
 
                 {loading ? (
                   <div className="mt-4 flex justify-center">
@@ -148,21 +150,21 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
                     {/* Basic Info */}
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                      <p className="text-sm font-medium text-gray-500">Status</p>
-                      <span
+                        <p className="text-sm font-medium text-gray-500">Status</p>
+                        <span
                           className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${getStatusColor(
-                          request.status
-                        )}`}
-                      >
-                        {request.status}
-                      </span>
-                    </div>
-                    {request.status === 'Rejected' && request.rejection_reason && (
+                            request.status
+                          )}`}
+                        >
+                          {request.status}
+                        </span>
+                      </div>
+                      {request.status === 'Rejected' && request.rejection_reason && (
                         <div className="mt-2 p-3 bg-red-50 rounded-md">
                           <p className="text-sm font-medium text-red-700">Rejection Reason:</p>
                           <p className="text-sm text-red-600 mt-1">{request.rejection_reason}</p>
-                      </div>
-                    )}
+                        </div>
+                      )}
                       <div>
                         <p className="text-sm font-medium text-gray-500">ID</p>
                         <p className="text-sm text-gray-900">{request.id}</p>
@@ -177,10 +179,14 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-500">Department</p>
-                        <p className="text-sm text-gray-900">{request.department?.name_en}</p>
+                        <p className="text-sm text-gray-900">
+                          {typeof request.department === 'object' 
+                            ? request.department.name_en 
+                            : request.department}
+                        </p>
                       </div>
                       {request.file_name && (
-                      <div>
+                        <div>
                           <p className="text-sm font-medium text-gray-500">Attachment</p>
                           <button
                             onClick={handleDownload}
@@ -189,27 +195,27 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
                             <ArrowDownTrayIcon className="h-4 w-4 mr-1.5" />
                             Download {request.file_name}
                           </button>
-                          </div>
-                        )}
+                        </div>
+                      )}
                       {request.response_file_name && (
-                          <div>
+                        <div>
                           <p className="text-sm font-medium text-gray-500">Response Document</p>
-                            <button
+                          <button
                             onClick={handleDownloadResponse}
                             className="mt-1 inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                            >
+                          >
                             <ArrowDownTrayIcon className="h-4 w-4 mr-1.5" />
-                              Download Response
-                            </button>
-                          </div>
-                        )}
+                            Download Response
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Request Logs */}
                     <div className="mt-6">
                       <button
                         onClick={() => setShowLogs(!showLogs)}
-                        className="text-sm font-medium text-primary-600 hover:text-primary-500"
+                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                       >
                         {showLogs ? 'Hide Activity Log' : 'Show Activity Log'}
                       </button>
@@ -256,8 +262,8 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
                               ))}
                             </ul>
                           </div>
-                      </div>
-                    )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -280,11 +286,11 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
 };
 
 const CitizenDashboard = () => {
+  const { user, loading: authLoading } = useAuth();
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [showNewRequest, setShowNewRequest] = useState(false);
 
-  //the handleFileChange function
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     console.log("Selected files:", files);
@@ -298,7 +304,6 @@ const CitizenDashboard = () => {
     reset,
   } = useForm();
 
-  // real data state
   const [stats, setStats] = useState({
     totalRequests: 0,
     ApprovedRequests: 0,
@@ -311,54 +316,39 @@ const CitizenDashboard = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-  // fetch dashboard data on mount
   useEffect(() => {
     const fetchDashboard = async () => {
+      if (!user) return;
+      
       try {
         setLoading(true);
-        console.log("Token in localStorage:", localStorage.getItem("token"));
-
-        // Modify the Promise.all to include departments
         const [statsRes, recentRes, departmentsRes] = await Promise.all([
           axiosInstance.get(`/api/user/stats`),
           axiosInstance.get(`/api/user/recent-requests`),
-          axiosInstance.get(`/api/user/departments`), // New endpoint to fetch departments
+          axiosInstance.get(`/api/user/departments`),
         ]);
-
+        console.log(recentRes.data);
         setStats(statsRes.data);
-        setDepartments(departmentsRes.data); // Store departments
+        setDepartments(departmentsRes.data);
 
-        // Ensure recentRes.data is handled correctly
         if (recentRes.data) {
-          console.log("Recent requests data:", recentRes.data); // Debug log
-
-          // If the data is already an array, use it directly
-          // If not, try to access the rows property or default to empty array
           const recentData = Array.isArray(recentRes.data)
             ? recentRes.data
             : recentRes.data.rows || [];
-
           setRecentRequests(recentData);
         } else {
           setRecentRequests([]);
         }
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
-        // Add detailed error logging
-        console.error("Error details:", {
-          status: err.response?.status,
-          statusText: err.response?.statusText,
-          data: err.response?.data,
-        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboard();
-  }, []);
+  }, [user]);
 
-  // handle new RTI request submission
   const onSubmit = async (data) => {
     try {
       const formData = new FormData();
@@ -366,18 +356,8 @@ const CitizenDashboard = () => {
       formData.append("subject", data.subject);
       formData.append("description", data.description);
 
-      // Debug log
-      console.log("Files:", selectedFiles[0]);
-
-      // Handle file upload - use selectedFiles state instead of data.files
       if (selectedFiles.length > 0) {
-        console.log("ApPending file:", selectedFiles[0]);
-        formData.append("attachment", selectedFiles[0]); // Use the first selected file
-      }
-
-      // Log FormData contents
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
+        formData.append("attachment", selectedFiles[0]);
       }
 
       const response = await axiosInstance.post(
@@ -391,9 +371,7 @@ const CitizenDashboard = () => {
       );
 
       if (response.data.success) {
-        // Refresh the dashboard data
         setSelectedFiles([]);
-
         const [statsRes, recentRes] = await Promise.all([
           axiosInstance.get("/api/user/stats"),
           axiosInstance.get("/api/user/recent-requests"),
@@ -403,370 +381,347 @@ const CitizenDashboard = () => {
         setRecentRequests(recentRes.data);
         reset();
         setShowNewRequest(false);
+        toast.success("Request submitted successfully!");
       }
     } catch (err) {
       console.error("Submit error:", err);
       setSubmitError(err.response?.data?.error || "Failed to submit request");
+      toast.error(err.response?.data?.error || "Failed to submit request");
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <DashboardLayout>
-        <p className="text-center py-10">Loading...</p>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-lg text-gray-600">Please log in to access the dashboard.</p>
+        </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="space-y-6">
-          {/* Header Section */}
-          <div className="bg-white shadow rounded-lg p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <DashboardLayout>
+      <div className="min-h-screen p-2 sm:p-4 lg:p-6">
+        {/* Header Section */}
+        <div className="p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Dashboard</h1>
+              <p className="mt-1 sm:mt-2 text-base sm:text-lg lg:text-xl text-gray-600">Welcome back, {user?.name || 'User'}! 👋</p>
+            </div>
+            <button
+              onClick={() => setShowNewRequest(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 border border-transparent rounded-xl sm:rounded-2xl shadow-sm text-sm sm:text-base font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 hover:scale-105"
+            >
+              <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+              New RTI Request
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-6 border border-gray-100/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Welcome, {user?.name}</h1>
-                <p className="mt-1 text-sm text-gray-500">Track and manage your RTI requests</p>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Processing</p>
+                <p className="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.processingRequests || 0}</p>
               </div>
-              <div className="mt-4 sm:mt-0">
-          <button
-            onClick={() => setShowNewRequest(true)}
-                  className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                >
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  New Request
-                </button>
+              <div className="p-2 sm:p-3 bg-blue-50 rounded-lg sm:rounded-xl">
+                <DocumentTextIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-blue-600" />
+              </div>
+            </div>
+            <div className="mt-3 sm:mt-4">
+              <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1 sm:h-1.5 bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${(stats.ApprovedRequests / stats.totalRequests) * 100}%` }}></div>
               </div>
             </div>
           </div>
 
-          {/* Stats Section */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => (
-              <div
-                key={stat.name}
-                className="bg-white overflow-hidden shadow rounded-lg"
-              >
-                <div className="p-4 sm:p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <stat.icon
-                        className="h-6 w-6 text-gray-400"
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <div className="ml-4 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">
-                          {stat.name}
-                        </dt>
-                        <dd>
-                          <div className="text-lg font-medium text-gray-900">
-                            {stat.value}
-                          </div>
-                        </dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-6 border border-gray-100/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Approved</p>
+                <p className="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.ApprovedRequests}</p>
               </div>
-            ))}
+              <div className="p-2 sm:p-3 bg-emerald-50 rounded-lg sm:rounded-xl">
+                <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-emerald-600" />
+              </div>
+            </div>
+            <div className="mt-3 sm:mt-4">
+              <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1 sm:h-1.5 bg-emerald-600 rounded-full transition-all duration-500" style={{ width: `${(stats.ApprovedRequests / stats.totalRequests) * 100}%` }}></div>
+              </div>
+            </div>
           </div>
 
-          {/* Requests Table */}
-          <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="px-4 py-5 sm:px-6">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">
-                Recent Requests
-              </h3>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-6 border border-gray-100/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Rejected</p>
+                <p className="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.RejectedRequests}</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-rose-50 rounded-lg sm:rounded-xl">
+                <XCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-rose-600" />
+              </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      ID
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Subject
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Department
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Date
-                    </th>
-                    <th scope="col" className="relative px-4 sm:px-6 py-3">
-                      <span className="sr-only">Actions</span>
-                    </th>
+            <div className="mt-3 sm:mt-4">
+              <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1 sm:h-1.5 bg-rose-600 rounded-full transition-all duration-500" style={{ width: `${(stats.RejectedRequests / stats.totalRequests) * 100}%` }}></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-6 border border-gray-100/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Pending</p>
+                <p className="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.PendingRequests}</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-amber-50 rounded-lg sm:rounded-xl">
+                <ClockIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-amber-600" />
+              </div>
+            </div>
+            <div className="mt-3 sm:mt-4">
+              <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-1 sm:h-1.5 bg-amber-600 rounded-full transition-all duration-500" style={{ width: `${(stats.PendingRequests / stats.totalRequests) * 100}%` }}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Requests Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-gray-100/50">
+          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b border-gray-200">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Recent Requests</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-white/50">
+                <tr>
+                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white/50 divide-y divide-gray-200">
+                {recentRequests.map((request) => (
+                  <tr key={request.id} className="hover:bg-gray-50/50 transition-colors duration-200">
+                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">{request.id}</td>
+                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.subject}</td>
+                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(request.status)}`}>
+                        {request.status}
+                      </span>
+                    </td>
+                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{new Date(request.created_at).toLocaleDateString()}</td>
+                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      <button
+                        onClick={() => {
+                          setSelectedRequest(request);
+                          setIsViewModalOpen(true);
+                        }}
+                        className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                      >
+                        <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {recentRequests.map((request) => (
-                    <tr key={request.id}>
-                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {request.id}
-                      </td>
-                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {request.subject}
-                      </td>
-                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {request.department?.name_en || request.department}
-                      </td>
-                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                            request.status
-                          )}`}
-                        >
-                          {request.status}
-                        </span>
-                      </td>
-                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(request.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => {
-                            setSelectedRequest(request.id);
-                            setIsViewModalOpen(true);
-                          }}
-                          className="text-primary-600 hover:text-primary-900"
-                        >
-                          View
-          </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
-        </div>
+      </div>
 
       {/* New Request Modal */}
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  New RTI Request
-                </h3>
-                <button
-                  onClick={() => setShowNewRequest(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <span className="sr-only">Close</span>
-                  <svg
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
+      <Transition appear show={showNewRequest} as={Fragment}>
+        <Dialog as="div" className="relative z-50" onClose={() => setShowNewRequest(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                {/* Subject */}
-                <div>
-                  <label
-                    htmlFor="subject"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Request Subject
-                  </label>
-                  <input
-                    id="subject"
-                    {...register("subject", {
-                      required: "Subject is required",
-                    })}
-                    className="input-field mt-1"
-                  />
-                  {errors.subject && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {errors.subject.message}
-                    </p>
-                  )}
-                </div>
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                    New RTI Request
+                  </Dialog.Title>
 
-                {/* Description */}
-                <div>
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Request Description
-                  </label>
-                  <textarea
-                    id="description"
-                    rows={4}
-                    {...register("description", {
-                      required: "Description is required",
-                    })}
-                    className="mt-1 input-field"
-                  />
-                  {errors.description && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {errors.description.message}
-                    </p>
-                  )}
-                </div>
+                  <form onSubmit={handleSubmit(onSubmit)} className="mt-4 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Department</label>
+                      <select
+                        {...register("department", { required: "Department is required" })}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                      >
+                        <option value="">Select Department</option>
+                        {departments.map((dept) => (
+                          <option key={dept.code} value={dept.code}>
+                            {dept.name_en}
+                          </option>
+                        ))}
+                      </select>
+                      {errors.department && (
+                        <p className="mt-1 text-sm text-red-600">{errors.department.message}</p>
+                      )}
+                    </div>
 
-                {/* Department */}
-                <div>
-                  <label
-                    htmlFor="department"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Select Department
-                  </label>
-                  <select
-                    id="department"
-                    {...register("department", {
-                      required: "Department is required",
-                    })}
-                    className="mt-1 input-field"
-                  >
-                    <option value="">Select...</option>
-                    {departments.map((dept) => (
-                      <option key={dept.code} value={dept.code}>
-                        {dept.name_en}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.department && (
-                    <p className="text-red-600 text-sm mt-1">
-                      {errors.department.message}
-                    </p>
-                  )}
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Subject</label>
+                      <input
+                        type="text"
+                        {...register("subject", { required: "Subject is required" })}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                      />
+                      {errors.subject && (
+                        <p className="mt-1 text-sm text-red-600">{errors.subject.message}</p>
+                      )}
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Attach Files
-                  </label>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Description</label>
+                      <textarea
+                        {...register("description", { required: "Description is required" })}
+                        rows={4}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                      />
+                      {errors.description && (
+                        <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
+                      )}
+                    </div>
 
-                  {/* Hidden file input */}
-                  <input
-                    id="files"
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Attachment</label>
+                      <input
+                        type="file"
+                        onChange={handleFileChange}
+                        className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                      />
+                    </div>
 
-                  {/* Custom-styled button to trigger file input */}
-                  <label
-                    htmlFor="files"
-                    className="inline-block mt-2 cursor-pointer text-sm text-white bg-black px-4 py-2 rounded-xl transition-transform hover:scale-105"
-                  >
-                    Select Files
-                  </label>
+                    {submitError && (
+                      <p className="text-sm text-red-600">{submitError}</p>
+                    )}
 
-                  {/* Display selected file names */}
-                  {selectedFiles.length > 0 && (
-                    <ul className="mt-2 text-sm text-gray-600 list-disc list-inside">
-                      {selectedFiles.map((file, idx) => (
-                        <li key={idx}>{file.name}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-
-                {/* Error */}
-                {submitError && (
-                  <p className="text-red-600 text-center">{submitError}</p>
-                )}
-
-                {/* Actions */}
-                <div className="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowNewRequest(false)}
-                    className="bg-gray-200 text-gray-800 rounded-lg px-4 py-2 hover:scale-105 transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-black text-white rounded-lg px-4 py-2 hover:scale-105 transition"
-                  >
-                    Submit
-                  </button>
-                </div>
-              </form>
+                    <div className="mt-6 flex justify-end space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowNewRequest(false)}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                      >
+                        Submit Request
+                      </button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
             </div>
           </div>
+        </Dialog>
+      </Transition>
 
       {/* View Request Modal */}
       <ViewRequestModal
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
-        requestId={selectedRequest}
+        requestId={selectedRequest?.id}
       />
-    </div>
+    </DashboardLayout>
   );
 };
 
-export default CitizenDashboard;
-
-// --- Helper component for stats ---
+// StatCard component
 function StatCard({ title, value, icon: Icon }) {
   const getIconColor = (title) => {
-    switch (title.toLowerCase()) {
-      case 'processing':
-        return 'text-blue-500';
-      case 'approved':
-        return 'text-emerald-500';
-      case 'rejected':
-        return 'text-red-500';
-      case 'pending':
-        return 'text-amber-500';
+    switch (title) {
+      case "Processing":
+        return "text-blue-500";
+      case "Approved":
+        return "text-emerald-500";
+      case "Rejected":
+        return "text-rose-500";
+      case "Pending":
+        return "text-amber-500";
       default:
-        return 'text-gray-400';
+        return "text-gray-500";
     }
   };
 
-  const iconColor = getIconColor(title);
+  const getFaintIcon = (title) => {
+    switch (title) {
+      case "Processing":
+        return <DocumentTextIcon className="h-32 w-32 text-blue-100 opacity-50" />;
+      case "Approved":
+        return <CheckCircleIcon className="h-32 w-32 text-emerald-100 opacity-50" />;
+      case "Rejected":
+        return <XCircleIcon className="h-32 w-32 text-rose-100 opacity-50" />;
+      case "Pending":
+        return <ClockIcon className="h-32 w-32 text-amber-100 opacity-50" />;
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-white to-gray-100 shadow-sm border border-gray-100 transition-all duration-300">
-      <div className="absolute top-0 right-0 mt-2 mr-2 sm:mt-4 sm:mr-4 opacity-75">
-        <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${iconColor}`} />
+    <div className="relative bg-white overflow-hidden shadow rounded-lg p-5">
+      {/* Faint background icon */}
+      <div className="absolute bottom-0 right-0 pr-2 pb-2 flex items-center pointer-events-none">
+        {getFaintIcon(title)}
       </div>
-      <div className="relative z-10 p-3 sm:p-6">
-        <h3 className="text-sm sm:text-lg font-medium text-gray-600">{title}</h3>
-        <p className="text-2xl sm:text-4xl font-bold text-gray-900 mt-1 sm:mt-2">{value}</p>
+
+      {/* Main icon */}
+      <div className="absolute top-4 right-4">
+        <Icon className={`h-8 w-8 ${getIconColor(title)}`} aria-hidden="true" />
       </div>
-      <div className="absolute bottom-0 right-0 opacity-5 transform translate-x-2 translate-y-2 sm:translate-x-4 sm:translate-y-4">
-        <Icon className={`h-16 w-16 sm:h-24 sm:w-24 ${iconColor}`} />
+
+      {/* Content: Title and Value */}
+      <div className="relative z-10">
+        <dl>
+          <dt className="text-base font-medium text-gray-500">{title}</dt>
+          <dd className="mt-1">
+            <div className="text-4xl font-extrabold text-gray-900">{value}</div>
+          </dd>
+        </dl>
       </div>
     </div>
   );
 }
+
+export default CitizenDashboard;

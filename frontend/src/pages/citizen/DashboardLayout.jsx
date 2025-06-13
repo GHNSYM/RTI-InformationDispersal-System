@@ -43,7 +43,7 @@ const DashboardLayout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen h-full bg-transparent">
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <Dialog
           as="div"
@@ -159,7 +159,7 @@ const DashboardLayout = ({ children }) => {
         </div>
       </div>
 
-      <div className="lg:pl-56">
+      <div className="lg:pl-56 flex flex-col min-h-screen">
         <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
           <button
             type="button"
@@ -247,8 +247,8 @@ const DashboardLayout = ({ children }) => {
           </div>
         </div>
 
-        <main className="py-10">
-          <div className="px-4 sm:px-6 lg:px-8">{children}</div>
+        <main className="flex-1 py-10">
+          <div className="px-4 sm:px-6 lg:px-8 h-full">{children}</div>
         </main>
       </div>
     </div>
