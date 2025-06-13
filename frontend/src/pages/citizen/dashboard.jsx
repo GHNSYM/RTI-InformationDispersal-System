@@ -424,137 +424,85 @@ const CitizenDashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen p-2 sm:p-4 lg:p-6">
-        {/* Header Section */}
-        <div className="p-3 sm:p-4 mb-4 sm:mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Dashboard</h1>
-              <p className="mt-1 sm:mt-2 text-base sm:text-lg lg:text-xl text-gray-600">Welcome back, {user?.name || 'User'}! 👋</p>
-            </div>
-            <button
-              onClick={() => setShowNewRequest(true)}
-              className="w-full sm:w-auto inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 border border-transparent rounded-xl sm:rounded-2xl shadow-sm text-sm sm:text-base font-medium text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 hover:scale-105"
-            >
-              <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
-              New RTI Request
-            </button>
+      <div className="min-h-screen">
+        <div className="py-4 sm:py-6">
+          <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-semibold text-gray-900">Dashboard</h1>
           </div>
-        </div>
+          <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+            {/* Stats */}
+            <div className="mt-6 sm:mt-8">
+              <div className="grid grid-cols-2 gap-2 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard title="Processing" value={stats.processingRequests || 0} icon={DocumentTextIcon} />
+                <StatCard title="Approved" value={stats.ApprovedRequests} icon={CheckCircleIcon} />
+                <StatCard title="Rejected" value={stats.RejectedRequests} icon={XCircleIcon} />
+                <StatCard title="Pending" value={stats.PendingRequests} icon={ClockIcon} />
+              </div>
+            </div>
 
-        {/* Stats Section */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-6 border border-gray-100/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Processing</p>
-                <p className="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.processingRequests || 0}</p>
+            {/* Recent Requests */}
+            <div className="mt-6 sm:mt-8">
+              <div className="sm:flex sm:items-center">
+                <div className="sm:flex-auto">
+                  <h2 className="text-2xl font-semibold leading-6 text-gray-900">
+                    Recent Requests
+                  </h2>
+                </div>
+                <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewRequest(true)}
+                    className="block rounded-md bg-black px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500"
+                  >
+                    New Request
+                  </button>
+                </div>
               </div>
-              <div className="p-2 sm:p-3 bg-blue-50 rounded-lg sm:rounded-xl">
-                <DocumentTextIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-blue-600" />
-              </div>
-            </div>
-            <div className="mt-3 sm:mt-4">
-              <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-1 sm:h-1.5 bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${(stats.ApprovedRequests / stats.totalRequests) * 100}%` }}></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-6 border border-gray-100/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Approved</p>
-                <p className="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.ApprovedRequests}</p>
-              </div>
-              <div className="p-2 sm:p-3 bg-emerald-50 rounded-lg sm:rounded-xl">
-                <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-emerald-600" />
-              </div>
-            </div>
-            <div className="mt-3 sm:mt-4">
-              <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-1 sm:h-1.5 bg-emerald-600 rounded-full transition-all duration-500" style={{ width: `${(stats.ApprovedRequests / stats.totalRequests) * 100}%` }}></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-6 border border-gray-100/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Rejected</p>
-                <p className="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.RejectedRequests}</p>
-              </div>
-              <div className="p-2 sm:p-3 bg-rose-50 rounded-lg sm:rounded-xl">
-                <XCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-rose-600" />
-              </div>
-            </div>
-            <div className="mt-3 sm:mt-4">
-              <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-1 sm:h-1.5 bg-rose-600 rounded-full transition-all duration-500" style={{ width: `${(stats.RejectedRequests / stats.totalRequests) * 100}%` }}></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-sm p-3 sm:p-4 lg:p-6 border border-gray-100/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">Pending</p>
-                <p className="mt-1 sm:mt-2 text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.PendingRequests}</p>
-              </div>
-              <div className="p-2 sm:p-3 bg-amber-50 rounded-lg sm:rounded-xl">
-                <ClockIcon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-amber-600" />
-              </div>
-            </div>
-            <div className="mt-3 sm:mt-4">
-              <div className="h-1 sm:h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-1 sm:h-1.5 bg-amber-600 rounded-full transition-all duration-500" style={{ width: `${(stats.PendingRequests / stats.totalRequests) * 100}%` }}></div>
+              <div className="mt-4 flow-root">
+                <div className="-mx-2 sm:-mx-6 lg:-mx-8">
+                  <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <div className="overflow-hidden rounded-xl shadow-sm border border-gray-200">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-white">
+                          <tr>
+                            <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                            <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {recentRequests.map((request) => (
+                            <tr key={request.id} className="hover:bg-gray-50/50 transition-colors duration-200">
+                              <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">{request.id}</td>
+                              <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.subject}</td>
+                              <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap">
+                                <span className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(request.status)}`}>
+                                  {request.status}
+                                </span>
+                              </td>
+                              <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.date}</td>
+                              <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                                <button
+                                  onClick={() => {
+                                    setSelectedRequest(request);
+                                    setIsViewModalOpen(true);
+                                  }}
+                                  className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                                >
+                                  <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Recent Requests Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-gray-100/50">
-          <div className="px-2 sm:px-6 lg:px-8 py-3 sm:py-6 border-b border-gray-200">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Recent Requests</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-white/50">
-                <tr>
-                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white/50 divide-y divide-gray-200">
-                {recentRequests.map((request) => (
-                  <tr key={request.id} className="hover:bg-gray-50/50 transition-colors duration-200">
-                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">{request.id}</td>
-                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.subject}</td>
-                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(request.status)}`}>
-                        {request.status}
-                      </span>
-                    </td>
-                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.date}</td>
-                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                      <button
-                        onClick={() => {
-                          setSelectedRequest(request);
-                          setIsViewModalOpen(true);
-                        }}
-                        className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
-                      >
-                        <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
