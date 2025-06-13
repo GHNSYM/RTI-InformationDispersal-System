@@ -88,7 +88,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
 
   const handleDownloadResponse = async () => {
     try {
-      const response = await axiosInstance.get(`/api/user/request/${requestId}/response`, {
+      const response = await axiosInstance.get(`/api/user/request/${requestId}/response-file`, {
         responseType: 'blob'
       });
 
@@ -99,6 +99,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading response:', error);
       toast.error('Failed to download response');
@@ -302,7 +303,13 @@ const CitizenDashboard = () => {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      department: '',
+      subject: '',
+      description: ''
+    }
+  });
 
   const [stats, setStats] = useState({
     totalRequests: 0,
@@ -327,14 +334,14 @@ const CitizenDashboard = () => {
           axiosInstance.get(`/api/user/recent-requests`),
           axiosInstance.get(`/api/user/departments`),
         ]);
-        console.log(recentRes.data);
+
         setStats(statsRes.data);
         setDepartments(departmentsRes.data);
 
         if (recentRes.data) {
           const recentData = Array.isArray(recentRes.data)
             ? recentRes.data
-            : recentRes.data.rows || [];
+            : [];
           setRecentRequests(recentData);
         } else {
           setRecentRequests([]);
@@ -351,6 +358,11 @@ const CitizenDashboard = () => {
 
   const onSubmit = async (data) => {
     try {
+      if (!data.department || !data.subject || !data.description) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("department", data.department);
       formData.append("subject", data.subject);
@@ -503,32 +515,32 @@ const CitizenDashboard = () => {
 
         {/* Recent Requests Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-gray-100/50">
-          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b border-gray-200">
+          <div className="px-2 sm:px-6 lg:px-8 py-3 sm:py-6 border-b border-gray-200">
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Recent Requests</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-white/50">
                 <tr>
-                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white/50 divide-y divide-gray-200">
                 {recentRequests.map((request) => (
                   <tr key={request.id} className="hover:bg-gray-50/50 transition-colors duration-200">
-                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">{request.id}</td>
-                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.subject}</td>
-                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap">
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">{request.id}</td>
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.subject}</td>
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(request.status)}`}>
                         {request.status}
                       </span>
                     </td>
-                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{new Date(request.created_at).toLocaleDateString()}</td>
-                    <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.date}</td>
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       <button
                         onClick={() => {
                           setSelectedRequest(request);
@@ -583,7 +595,7 @@ const CitizenDashboard = () => {
                       <label className="block text-sm font-medium text-gray-700">Department</label>
                       <select
                         {...register("department", { required: "Department is required" })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:text-sm"
                       >
                         <option value="">Select Department</option>
                         {departments.map((dept) => (
@@ -602,7 +614,7 @@ const CitizenDashboard = () => {
                       <input
                         type="text"
                         {...register("subject", { required: "Subject is required" })}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:text-sm"
                       />
                       {errors.subject && (
                         <p className="mt-1 text-sm text-red-600">{errors.subject.message}</p>
@@ -614,7 +626,7 @@ const CitizenDashboard = () => {
                       <textarea
                         {...register("description", { required: "Description is required" })}
                         rows={4}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                        className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:text-sm"
                       />
                       {errors.description && (
                         <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
@@ -622,7 +634,7 @@ const CitizenDashboard = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Attachment</label>
+                      <label className="block text-sm font-medium text-gray-700">Attachment (Optional)</label>
                       <input
                         type="file"
                         onChange={handleFileChange}
@@ -630,11 +642,7 @@ const CitizenDashboard = () => {
                       />
                     </div>
 
-                    {submitError && (
-                      <p className="text-sm text-red-600">{submitError}</p>
-                    )}
-
-                    <div className="mt-6 flex justify-end space-x-3">
+                    <div className="flex justify-end space-x-3">
                       <button
                         type="button"
                         onClick={() => setShowNewRequest(false)}
@@ -644,7 +652,7 @@ const CitizenDashboard = () => {
                       </button>
                       <button
                         type="submit"
-                        className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        className="px-4 py-2 text-sm font-medium text-white bg-black border border-transparent rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                       >
                         Submit Request
                       </button>

@@ -237,7 +237,9 @@ router.get('/departments', auth, async (req, res, next) => {
 router.post('/departments', auth, async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const { district_id, name_en, pio_name, pio_email, pio_phone, pio_password, pio_address } = req.body;    // Only SPIO (role "3") can create departments
+    const { district_id, name_en, pio_name, pio_email, pio_phone, pio_password, pio_address } = req.body;
+
+    // Only SPIO (role "3") can create departments
     if (req.user.role !== "3") {
       await t.rollback();
       return res.status(403).json({ error: 'Only SPIO can create departments' });
@@ -260,22 +262,11 @@ router.post('/departments', auth, async (req, res) => {
       return res.status(403).json({ error: 'You can only create departments for your assigned district' });
     }
 
-    // Get full district details
-    const district = await District.findOne({
-      where: { district_id: district_id },
-      transaction: t
-    });
-
-    if (!district) {
-      await t.rollback();
-      return res.status(400).json({ error: 'Invalid district selected' });
-    }
-
     // Get the last department code for this district
     const lastDepartment = await Department.findOne({
       where: {
         code: {
-          [Op.like]: `${district.district_code}%`
+          [Op.like]: `${userDistrict.district_code}%`
         }
       },
       order: [['code', 'DESC']],
@@ -289,7 +280,7 @@ router.post('/departments', auth, async (req, res) => {
       const lastSerial = parseInt(lastDepartment.code.slice(-3));
       newSerial = (lastSerial + 1).toString().padStart(3, '0');
     }
-    const code = `${district.district_code}${newSerial}`;
+    const code = `${userDistrict.district_code}${newSerial}`;
     
     // Check if department already exists
     const existingDept = await Department.findOne({ 
@@ -326,7 +317,7 @@ router.post('/departments', auth, async (req, res) => {
     const department = await Department.create({
       code,
       name_en,
-      district_code: district.district_code,
+      district_code: userDistrict.district_code,
     }, { transaction: t });
 
     // Create PIO user - password will be hashed by the User model hooks
@@ -888,9 +879,19 @@ router.get('/departments/district/:district_id', auth, async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized access' });
     }
 
+    // First get the district code from the district_id
+    const district = await District.findOne({
+      where: { district_id: req.params.district_id },
+      attributes: ['district_code']
+    });
+
+    if (!district) {
+      return res.status(404).json({ error: 'District not found' });
+    }
+
     const departments = await Department.findAll({
       where: { 
-        district_id: req.params.district_id 
+        district_code: district.district_code
       },
       attributes: ['code', 'name_en'],
       order: [['name_en', 'ASC']]

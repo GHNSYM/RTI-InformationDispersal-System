@@ -77,7 +77,7 @@ const ViewRequestModal = ({ isOpen, onClose, requestId }) => {
 
   const handleDownloadResponse = async () => {
     try {
-      const response = await axiosInstance.get(`/api/user/request/${requestId}/response`, {
+      const response = await axiosInstance.get(`/api/user/request/${requestId}/response-file`, {
         responseType: 'blob'
       });
 
@@ -310,60 +310,50 @@ const CitizenRequests = () => {
 
   return (
     <DashboardLayout>
-      <div className="p-2 sm:p-4 lg:p-6">
+      <div className="p-1 sm:p-4 lg:p-6">
         {/* Header Section */}
         <div className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">All Requests</h1>
           <p className="mt-1 text-sm text-gray-500">View and manage all your RTI requests</p>
         </div>
 
-        {/* Main Content */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200/50 shadow-sm">
-          {loading ? (
-            <div className="flex justify-center items-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : requests.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No requests found</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-white/50">
-                  <tr>
-                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th scope="col" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        {/* Requests Table */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden border border-gray-100/50">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-white/50">
+                <tr>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th scope="col" className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white/50 divide-y divide-gray-200">
+                {requests.map((request) => (
+                  <tr key={request.id} className="hover:bg-gray-50/50 transition-colors duration-200">
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">{request.id}</td>
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.subject}</td>
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(request.status)}`}>
+                        {request.status}
+                      </span>
+                    </td>
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.date}</td>
+                    <td className="px-2 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      <button
+                        onClick={() => openModal(request.id)}
+                        className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                      >
+                        <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white/50 divide-y divide-gray-200">
-                  {requests.map((request) => (
-                    <tr key={request.id} className="hover:bg-gray-50/50 transition-colors duration-200">
-                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">{request.id}</td>
-                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.subject}</td>
-                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(request.status)}`}>
-                          {request.status}
-                        </span>
-                      </td>
-                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{request.date}</td>
-                      <td className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                        <button
-                          onClick={() => openModal(request.id)}
-                          className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
-                        >
-                          <EyeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
